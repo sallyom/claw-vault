@@ -3,8 +3,15 @@
   "name": "Vault",
   "description": "HashiCorp Vault SecretRef provider integration",
   "activation": {
-    "onStartup": false
+    "onStartup": false,
+    "onCommands": ["vault"]
   },
+  "commandAliases": [
+    {
+      "name": "vault",
+      "kind": "cli"
+    }
+  ],
   "enabledByDefault": true,
   "secretProviderIntegrations": {
     "vault": {
@@ -17,6 +24,7 @@
       "timeoutMs": 5000,
       "noOutputTimeoutMs": 5000,
       "maxOutputBytes": 1048576,
+      "allowInsecurePath": true,
       "passEnv": [
         "VAULT_ADDR",
         "VAULT_TOKEN",

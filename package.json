@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "description": "HashiCorp Vault SecretRef provider integration for OpenClaw",
   "type": "module",
+  "packageManager": "npm@11.4.2",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -12,21 +13,24 @@
     "README.md",
     "openclaw.plugin.json",
     "index.ts",
-    "vault-secret-ref-resolver.js"
+    "cli-metadata.ts",
+    "cli.ts",
+    "vault-secret-ref-resolver.js",
+    "dist"
   ],
   "scripts": {
-    "test": "vitest run"
+    "build": "tsc --outDir dist --rootDir . --module NodeNext --moduleResolution NodeNext --target ES2022 --strict --skipLibCheck --types node --declaration false --sourceMap false index.ts cli.ts cli-metadata.ts && cp vault-secret-ref-resolver.js dist/vault-secret-ref-resolver.js",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
-    "typescript": "^5.9.3",
-    "vitest": "^4.1.5"
-  },
-  "peerDependencies": {
-    "openclaw": ">=2026.5.6"
+    "commander": "14.0.2",
+    "typescript": "5.9.3",
+    "vitest": "4.1.6"
   },
   "openclaw": {
     "extensions": [
-      "./index.ts"
+      "./dist/index.js"
     ],
     "compat": {
       "pluginApi": ">=2026.5.6"

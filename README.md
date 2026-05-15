@@ -49,12 +49,37 @@ Test fallback:
 
 - `CLAW_VAULT_VALUES_JSON`
 
+## Commands
+
+```bash
+openclaw vault status
+openclaw vault setup --openai-id providers/openai/apiKey
+openclaw vault setup --anthropic-id providers/anthropic/apiKey
+openclaw vault setup --openrouter-id providers/openrouter/apiKey
+openclaw vault setup \
+  --openai-id providers/openai/apiKey \
+  --anthropic-id providers/anthropic/apiKey \
+  --openrouter-id providers/openrouter/apiKey \
+  --provider-key local-openai=providers/local-openai/apiKey
+```
+
+`openclaw vault setup` writes an OpenClaw secrets apply plan and prints the
+commands to dry-run, apply, audit, and reload it. The generated OpenClaw config
+stores SecretRefs, not raw API keys:
+
+```json
+{ "source": "exec", "provider": "vault", "id": "providers/openai/apiKey" }
+```
+
+Use `--provider-key <provider=id>` for OpenAI-compatible or custom model
+providers stored under `models.providers.<provider>.apiKey`.
+
 ## Local Smoke
 
 ```bash
 printf '%s\n' '{"protocolVersion":1,"ids":["providers/openai/apiKey"]}' \
   | CLAW_VAULT_VALUES_JSON='{"providers/openai/apiKey":"not-a-real-value"}' \
-    node vault-secret-ref-resolver.js
+    node ./vault-secret-ref-resolver.js
 ```
 
 Expected:
@@ -63,24 +88,22 @@ Expected:
 {"protocolVersion":1,"values":{"providers/openai/apiKey":"not-a-real-value"},"errors":{}}
 ```
 
-## Install In OpenClaw Source Checkout
+## Install
 
-Until this plugin is packaged with compiled runtime output, load it as a source
-plugin:
+From a local checkout:
 
 ```bash
-openclaw config patch --stdin <<'JSON5'
-{
-  plugins: {
-    load: {
-      paths: ["/absolute/path/to/claw-vault"],
-    },
-  },
-}
-JSON5
+openclaw plugins install /absolute/path/to/claw-vault --force
 ```
 
-Then configure SecretRefs that use provider `vault`.
+From git:
+
+```bash
+openclaw plugins install git:github.com/sallyom/claw-vault --force
+openclaw plugins install git:github.com/sallyom/claw-vault@<branch-or-tag-or-sha> --force
+```
+
+Then configure SecretRefs that use provider `vault`, or run `openclaw vault setup`.
 
 ## Tests
 
