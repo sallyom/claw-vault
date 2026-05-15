@@ -9,8 +9,13 @@
     "type": "git",
     "url": "git+https://github.com/sallyom/claw-vault.git"
   },
+  "homepage": "https://github.com/sallyom/claw-vault#readme",
+  "bugs": {
+    "url": "https://github.com/sallyom/claw-vault/issues"
+  },
   "files": [
     "README.md",
+    "LICENSE",
     "openclaw.plugin.json",
     "index.ts",
     "cli-metadata.ts",
@@ -24,7 +29,9 @@
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
+    "@types/node": "25.8.0",
     "commander": "14.0.2",
+    "openclaw": "2026.5.12",
     "typescript": "5.9.3",
     "vitest": "4.1.6"
   },
