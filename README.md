@@ -3,8 +3,8 @@
 HashiCorp Vault SecretRef provider integration for OpenClaw.
 
 This plugin keeps Vault-specific resolution outside OpenClaw core. It declares
-a `secretProviderIntegrations.vault` preset that materializes an OpenClaw exec
-secret provider.
+a `secretProviderIntegrations.vault` preset that OpenClaw can use as a
+plugin-managed exec SecretRef provider.
 
 ## SecretRef IDs
 
@@ -65,7 +65,19 @@ openclaw vault setup \
 
 `openclaw vault setup` writes an OpenClaw secrets apply plan and prints the
 commands to dry-run, apply, audit, and reload it. The generated OpenClaw config
-stores SecretRefs, not raw API keys:
+stores a plugin-managed Vault provider and SecretRefs, not raw API keys:
+
+```json
+{
+  "source": "exec",
+  "pluginIntegration": {
+    "pluginId": "vault",
+    "integrationId": "vault"
+  }
+}
+```
+
+Model API key fields then point at that local provider alias:
 
 ```json
 { "source": "exec", "provider": "vault", "id": "providers/openai/apiKey" }

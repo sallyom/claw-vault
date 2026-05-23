@@ -1,30 +1,17 @@
-import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { __testing } from "../cli.js";
 
 describe("vault CLI helpers", () => {
-  it("builds a secure executable resolver provider config", () => {
+  it("builds a plugin-managed resolver provider config", () => {
     const config = __testing.buildProviderConfig();
 
-    expect(config).toMatchObject({
+    expect(config).toEqual({
       source: "exec",
-      timeoutMs: 5000,
-      noOutputTimeoutMs: 5000,
-      maxOutputBytes: 1024 * 1024,
-      passEnv: [
-        "VAULT_ADDR",
-        "VAULT_TOKEN",
-        "VAULT_NAMESPACE",
-        "CLAW_VAULT_KV_MOUNT",
-        "CLAW_VAULT_KV_VERSION",
-        "CLAW_VAULT_VALUES_JSON",
-      ],
-      allowInsecurePath: true,
+      pluginIntegration: {
+        pluginId: "vault",
+        integrationId: "vault",
+      },
     });
-    expect(config.command).toBe(process.execPath);
-    expect(config.args).toEqual([expect.stringContaining("vault-secret-ref-resolver.js")]);
-    expect(path.dirname(config.args[0])).toContain("vault");
-    expect(config).not.toHaveProperty("trustedDirs");
   });
 
   it("builds model provider targets for Vault SecretRefs", () => {

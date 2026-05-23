@@ -22,13 +22,10 @@ type SecretsPlanTarget = {
 
 type VaultExecProviderConfig = {
   source: "exec";
-  command: string;
-  args: string[];
-  timeoutMs: number;
-  noOutputTimeoutMs: number;
-  maxOutputBytes: number;
-  passEnv: string[];
-  allowInsecurePath: true;
+  pluginIntegration: {
+    pluginId: "vault";
+    integrationId: "vault";
+  };
 };
 
 type ProviderSecretMapping = {
@@ -67,11 +64,13 @@ type ProviderStatus = {
   configured: boolean;
   source?: string;
   command?: string;
+  pluginIntegration?: {
+    pluginId: string;
+    integrationId: string;
+  };
 };
 
 const VAULT_PROVIDER_ALIAS = "vault";
-const DEFAULT_TIMEOUT_MS = 5000;
-const DEFAULT_MAX_OUTPUT_BYTES = 1024 * 1024;
 const SECRET_PROVIDER_ALIAS_PATTERN = /^[a-z][a-z0-9_-]{0,63}$/;
 const MODEL_PROVIDER_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/;
 const EXEC_SECRET_REF_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}$/;
@@ -120,10 +119,23 @@ function readProviderStatus(config: OpenClawConfig, providerAlias: string): Prov
   if (!isRecord(provider)) {
     return { configured: false };
   }
+  const providerRecord = provider as Record<string, unknown>;
+  const pluginIntegration = providerRecord.pluginIntegration;
   return {
     configured: true,
     source: normalizeOptionalString(provider.source),
     ...(provider.source === "exec" ? { command: normalizeOptionalString(provider.command) } : {}),
+    ...(provider.source === "exec" &&
+    isRecord(pluginIntegration) &&
+    typeof pluginIntegration.pluginId === "string" &&
+    typeof pluginIntegration.integrationId === "string"
+      ? {
+          pluginIntegration: {
+            pluginId: pluginIntegration.pluginId,
+            integrationId: pluginIntegration.integrationId,
+          },
+        }
+      : {}),
   };
 }
 
@@ -132,23 +144,12 @@ function resolveResolverScriptPath(): string {
 }
 
 function buildProviderConfig(): VaultExecProviderConfig {
-  const resolverScript = resolveResolverScriptPath();
   return {
     source: "exec",
-    command: process.execPath,
-    args: [resolverScript],
-    timeoutMs: DEFAULT_TIMEOUT_MS,
-    noOutputTimeoutMs: DEFAULT_TIMEOUT_MS,
-    maxOutputBytes: DEFAULT_MAX_OUTPUT_BYTES,
-    passEnv: [
-      "VAULT_ADDR",
-      "VAULT_TOKEN",
-      "VAULT_NAMESPACE",
-      "CLAW_VAULT_KV_MOUNT",
-      "CLAW_VAULT_KV_VERSION",
-      "CLAW_VAULT_VALUES_JSON",
-    ],
-    allowInsecurePath: true,
+    pluginIntegration: {
+      pluginId: "vault",
+      integrationId: "vault",
+    },
   };
 }
 
@@ -298,6 +299,11 @@ async function runStatus(config: OpenClawConfig, options: StatusOptions): Promis
   }
   if (provider.command) {
     writeLine(`Command: ${provider.command}`);
+  }
+  if (provider.pluginIntegration) {
+    writeLine(
+      `Plugin integration: ${provider.pluginIntegration.pluginId}:${provider.pluginIntegration.integrationId}`,
+    );
   }
   writeLine(`Resolver: ${result.resolverScript}`);
   writeLine(`VAULT_ADDR: ${result.vaultAddr ?? "not set"}`);
