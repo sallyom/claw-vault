@@ -6,6 +6,10 @@ This plugin keeps Vault-specific resolution outside OpenClaw core. It declares
 a `secretProviderIntegrations.vault` preset that OpenClaw can use as a
 plugin-managed exec SecretRef provider.
 
+The repository and package are named `claw-vault`, but the OpenClaw plugin id is
+`vault`. Config that references the plugin-managed provider should use
+`pluginIntegration.pluginId: "vault"`.
+
 ## SecretRef IDs
 
 By default, SecretRef ids use this convention:
@@ -53,10 +57,12 @@ Test fallback:
 
 ```bash
 openclaw vault status
+openclaw vault status --json
 openclaw vault setup --openai-id providers/openai/apiKey
 openclaw vault setup --anthropic-id providers/anthropic/apiKey
 openclaw vault setup --openrouter-id providers/openrouter/apiKey
 openclaw vault setup \
+  --plan-out ./vault-secrets-plan.json \
   --openai-id providers/openai/apiKey \
   --anthropic-id providers/anthropic/apiKey \
   --openrouter-id providers/openrouter/apiKey \
