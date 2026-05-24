@@ -123,6 +123,43 @@ openclaw plugins install git:github.com/sallyom/claw-vault@<branch-or-tag-or-sha
 
 Then configure SecretRefs that use provider `vault`, or run `openclaw vault setup`.
 
+## TweetClaw Credential Example
+
+Use claw-vault with TweetClaw when an OpenClaw workspace needs X/Twitter
+automation without storing the Xquik API key as plaintext in `openclaw.json`.
+Install TweetClaw from npm, then point its `apiKey` config at a Vault SecretRef:
+
+```bash
+openclaw plugins install @xquik/tweetclaw
+
+openclaw config patch --stdin <<'JSON5'
+{
+  plugins: {
+    load: {
+      paths: ["/absolute/path/to/claw-vault"],
+    },
+    entries: {
+      tweetclaw: {
+        config: {
+          apiKey: {
+            source: "exec",
+            provider: "vault",
+            id: "providers/xquik/apiKey",
+          },
+        },
+      },
+    },
+  },
+}
+JSON5
+```
+
+With the default KV v2 mount, the resolver reads
+`secret/data/providers/xquik` and returns the `apiKey` field. TweetClaw can then
+scrape tweets, search tweets, search tweet replies, post tweets, post tweet
+replies, export followers, look up users, handle media, direct messages,
+monitors, webhooks, and giveaway draws while the Xquik API key stays in Vault.
+
 ## Tests
 
 ```bash
